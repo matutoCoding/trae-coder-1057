@@ -1,0 +1,62 @@
+@use '@/styles/variables.scss' as *;
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.pending {
+  background-color: $color-warning-bg;
+  color: $color-warning;
+}
+
+.approved {
+  background-color: $color-success-bg;
+  color: $color-success;
+}
+
+.rejected {
+  background-color: $color-error-bg;
+  color: $color-error;
+}
+
+.cancelled {
+  background-color: $color-bg-input;
+  color: $color-text-tertiary;
+}
+
+.completed {
+  background-color: $color-info-bg;
+  color: $color-info;
+}
+
+.available {
+  background-color: $color-success-bg;
+  color: $color-success;
+}
+
+.occupied {
+  background-color: $color-error-bg;
+  color: $color-error;
+}
+
+.maintenance {
+  background-color: $color-warning-bg;
+  color: $color-warning;
+}
+
+.online {
+  background-color: $color-success-bg;
+  color: $color-success;
+}
+
+.offline {
+  background-color: $color-error-bg;
+  color: $color-error;
+}

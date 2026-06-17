@@ -1,0 +1,310 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.formSection {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.formItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-border-light;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.formLabel {
+  width: 160rpx;
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+  padding-top: 4rpx;
+}
+
+.required {
+  color: $color-error;
+  margin-right: 4rpx;
+}
+
+.formInput {
+  flex: 1;
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  border: none;
+  outline: none;
+  background: transparent;
+  line-height: 1.5;
+}
+
+.formValue {
+  flex: 1;
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  text-align: right;
+}
+
+.formValuePlaceholder {
+  color: $color-text-disabled;
+}
+
+.attendeeSelector {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.counterBtn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $color-bg-input;
+  border-radius: $radius-round;
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+
+  &.disabled {
+    opacity: 0.4;
+  }
+}
+
+.counterValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  min-width: 60rpx;
+  text-align: center;
+}
+
+.facilityList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.facilityItem {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-xs $spacing-md;
+  background-color: $color-bg-input;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  border-radius: $radius-button;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.selected {
+    background-color: $color-primary-bg;
+    color: $color-primary;
+    border-color: $color-primary;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.textareaWrapper {
+  flex: 1;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: $spacing-md;
+  background-color: $color-bg-input;
+  border-radius: $radius-md;
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.autoAllocateInfo {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  background: linear-gradient(135deg, $color-primary-bg 0%, $color-white 100%);
+}
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.infoIcon {
+  font-size: $font-size-xl;
+}
+
+.infoTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.infoDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.benefitList {
+  margin-top: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .check {
+    color: $color-success;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  background-color: $color-white;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.btnPrimary {
+  background-color: $color-primary;
+  color: $color-white;
+}
+
+.btnSecondary {
+  background-color: $color-bg-input;
+  color: $color-text-secondary;
+}
+
+.timeSelector {
+  flex: 1;
+  text-align: right;
+}
+
+.timeText {
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.dateText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.allocationResult {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  background-color: $color-success-bg;
+  border: 2rpx solid $color-success;
+}
+
+.resultTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-success;
+  margin-bottom: $spacing-sm;
+}
+
+.resultRoom {
+  font-size: $font-size-lg;
+  font-weight: $font-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.resultReason {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.noRoomTip {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  background-color: $color-error-bg;
+  border: 2rpx solid $color-error;
+}
+
+.noRoomTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-error;
+  margin-bottom: $spacing-sm;
+}
+
+.noRoomDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}

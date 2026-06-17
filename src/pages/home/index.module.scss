@@ -1,0 +1,235 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #EFF6FF 0%, $color-bg-page 100%);
+}
+
+.header {
+  padding: $spacing-xl $page-padding $spacing-lg;
+  padding-top: 60rpx;
+}
+
+.greeting {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.subGreeting {
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+}
+
+.dateInfo {
+  margin-top: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.dateText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.weekdayText {
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+}
+
+.quickActions {
+  display: flex;
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-xl;
+}
+
+.actionCard {
+  flex: 1;
+  @include card;
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+.actionIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+
+  &.primary {
+    background-color: $color-primary-bg;
+  }
+
+  &.success {
+    background-color: $color-success-bg;
+  }
+
+  &.warning {
+    background-color: $color-warning-bg;
+  }
+
+  &.info {
+    background-color: $color-info-bg;
+  }
+}
+
+.actionText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.section {
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-xl;
+}
+
+.sectionHeader {
+  @include flex-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.moreLink {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.statCard {
+  flex: 1;
+  @include card;
+  padding: $spacing-lg;
+  text-align: center;
+}
+
+.statValue {
+  font-size: $font-size-3xl;
+  font-weight: $font-bold;
+  color: $color-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.todayBookings {
+  @include card;
+  padding: $spacing-lg;
+}
+
+.emptyState {
+  padding: $spacing-2xl 0;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: $font-size-base;
+  color: $color-text-tertiary;
+}
+
+.bookingItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-border-light;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.timeBlock {
+  width: 120rpx;
+  flex-shrink: 0;
+}
+
+.startTime {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.endTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.bookingInfo {
+  flex: 1;
+  margin-left: $spacing-md;
+}
+
+.bookingTitle {
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.bookingRoom {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.statusBadge {
+  flex-shrink: 0;
+}
+
+.quickBookBtn {
+  position: fixed;
+  bottom: 120rpx;
+  right: $page-padding;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  box-shadow: $shadow-float;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.quickBookIcon {
+  font-size: 48rpx;
+  color: $color-white;
+}

@@ -1,0 +1,140 @@
+@use '@/styles/variables.scss' as *;
+
+.timeSlotPicker {
+  padding: $spacing-md 0;
+}
+
+.dateSelector {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  overflow-x: auto;
+  padding-bottom: $spacing-sm;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dateItem {
+  flex-shrink: 0;
+  width: 120rpx;
+  padding: $spacing-md $spacing-sm;
+  border-radius: $radius-md;
+  background-color: $color-bg-card;
+  text-align: center;
+  transition: all $transition-base;
+  border: 2rpx solid transparent;
+
+  &.active {
+    background-color: $color-primary;
+    border-color: $color-primary;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.dateDay {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+
+  .active & {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.dateNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+
+  .active & {
+    color: $color-white;
+  }
+}
+
+.timeSlots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.timeSlot {
+  width: calc((100% - 32rpx) / 3);
+  padding: $spacing-md $spacing-sm;
+  border-radius: $radius-md;
+  background-color: $color-bg-card;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.selected {
+    background-color: $color-primary-bg;
+    border-color: $color-primary;
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+
+  &.disabled {
+    background-color: $color-bg-input;
+    color: $color-text-disabled;
+  }
+
+  &:active:not(.disabled) {
+    opacity: 0.8;
+    transform: scale(0.96);
+  }
+}
+
+.sectionLabel {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.durationSelector {
+  margin-top: $spacing-lg;
+}
+
+.durationOptions {
+  display: flex;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.durationOption {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  background-color: $color-bg-card;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary-bg;
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.selectedInfo {
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+  background-color: $color-primary-bg;
+  border-radius: $radius-md;
+  text-align: center;
+}
+
+.selectedText {
+  font-size: $font-size-base;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}

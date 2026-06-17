@@ -1,0 +1,127 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+}
+
+.tabs {
+  display: flex;
+  background-color: $color-white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab {
+  flex: 1;
+  padding: $spacing-md 0;
+  text-align: center;
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+  position: relative;
+  transition: all $transition-base;
+
+  &.active {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+
+  &.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48rpx;
+    height: 6rpx;
+    background-color: $color-primary;
+    border-radius: 3rpx;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  background-color: $color-error;
+  color: $color-white;
+  font-size: 20rpx;
+  border-radius: $radius-round;
+  margin-left: 8rpx;
+}
+
+.tabContent {
+  padding: $spacing-md $page-padding;
+  padding-bottom: 120rpx;
+}
+
+.statsCard {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  display: flex;
+  justify-content: space-around;
+}
+
+.statItem {
+  text-align: center;
+  flex: 1;
+
+  &:not(:last-child) {
+    border-right: 1rpx solid $color-border-light;
+  }
+}
+
+.statValue {
+  font-size: $font-size-2xl;
+  font-weight: $font-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.pending .statValue {
+  color: $color-warning;
+}
+
+.approved .statValue {
+  color: $color-success;
+}
+
+.rejected .statValue {
+  color: $color-error;
+}
+
+.sectionTitle {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.emptyState {
+  padding: $spacing-2xl;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-base;
+  color: $color-text-tertiary;
+}
+
+.list {
+  margin-bottom: $spacing-lg;
+}

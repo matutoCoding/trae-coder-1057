@@ -1,0 +1,10 @@
+{
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true
+  },
+  "appid": "ttxxxxxxxxxxxxxxxx",
+  "projectname": "meeting-room-booking"
+}

@@ -1,0 +1,143 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background-color: $color-white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-input;
+  border-radius: $radius-button;
+  margin-bottom: $spacing-md;
+}
+
+.searchIcon {
+  font-size: $font-size-lg;
+  margin-right: $spacing-sm;
+  color: $color-text-tertiary;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.filterTabs {
+  display: flex;
+  gap: $spacing-sm;
+  overflow-x: auto;
+  padding-bottom: $spacing-xs;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filterTab {
+  flex-shrink: 0;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background-color: $color-bg-input;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary;
+    color: $color-white;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.roomList {
+  padding: $spacing-md $page-padding;
+  padding-bottom: 120rpx;
+}
+
+.emptyState {
+  padding: $spacing-2xl;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-base;
+  color: $color-text-tertiary;
+}
+
+.dateSelector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $page-padding;
+  background-color: $color-white;
+  border-top: 1rpx solid $color-border-light;
+}
+
+.dateNav {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.navBtn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  border-radius: $radius-round;
+  background-color: $color-bg-input;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.currentDate {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.viewToggle {
+  display: flex;
+  background-color: $color-bg-input;
+  border-radius: $radius-round;
+  padding: 4rpx;
+}
+
+.toggleBtn {
+  padding: $spacing-xs $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border-radius: $radius-round;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-white;
+    color: $color-primary;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+}

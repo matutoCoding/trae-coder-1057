@@ -1,0 +1,102 @@
+@use '@/styles/variables.scss' as *;
+
+.roomCard {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.cardHeader {
+  @include flex-between;
+  margin-bottom: $spacing-md;
+}
+
+.roomName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.roomInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .icon {
+    font-size: $font-size-sm;
+  }
+}
+
+.roomDevices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.deviceTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  background-color: $color-primary-bg;
+  color: $color-primary;
+  font-size: $font-size-xs;
+  border-radius: $radius-sm;
+}
+
+.cardFooter {
+  @include flex-between;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-border-light;
+}
+
+.usageRate {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.usageLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.usageBar {
+  width: 120rpx;
+  height: 8rpx;
+  background-color: $color-bg-input;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.usageFill {
+  height: 100%;
+  background-color: $color-primary;
+  border-radius: $radius-round;
+  transition: width $transition-slow;
+}
+
+.floorBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  background-color: $color-secondary;
+  color: $color-white;
+  font-size: $font-size-xs;
+  border-radius: $radius-sm;
+}
