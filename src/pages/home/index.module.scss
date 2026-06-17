@@ -305,6 +305,7 @@
   color: $color-text-tertiary;
   flex-shrink: 0;
   margin-left: $spacing-sm;
+  white-space: nowrap;
 }
 
 .notifMsg {
@@ -330,4 +331,33 @@
   background-color: $color-error;
   flex-shrink: 0;
   margin-top: 8rpx;
+}
+
+.notifResultTag {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-round;
+  font-size: 20rpx;
+  color: $color-white;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.notifBookingTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+  @include text-ellipsis;
+}
+
+.notifMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4rpx;
+}
+
+.notifMetaText {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
 }

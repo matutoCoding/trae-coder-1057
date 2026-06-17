@@ -116,6 +116,57 @@ export const mockApprovals: ApprovalRecord[] = [
     comment: '已安排茶水',
     createdAt: '2024-01-13 16:00',
     approvedAt: '2024-01-14 10:30'
+  },
+  {
+    id: 'approval-008',
+    bookingId: 'booking-007',
+    bookingTitle: '面试 - 高级前端工程师',
+    applicantName: '蒋经理',
+    applicantDepartment: '技术部',
+    date: today,
+    startTime: '14:30',
+    endTime: '15:30',
+    attendeeCount: 3,
+    role: 'department_head',
+    roleName: '部门负责人',
+    status: 'approved',
+    comment: '同意',
+    createdAt: '2024-01-14 17:00',
+    approvedAt: '2024-01-15 09:00'
+  },
+  {
+    id: 'approval-009',
+    bookingId: 'booking-007',
+    bookingTitle: '面试 - 高级前端工程师',
+    applicantName: '蒋经理',
+    applicantDepartment: '技术部',
+    date: today,
+    startTime: '14:30',
+    endTime: '15:30',
+    attendeeCount: 3,
+    role: 'admin',
+    roleName: '行政',
+    status: 'cancelled',
+    comment: '预约已取消',
+    createdAt: '2024-01-14 17:00',
+    approvedAt: '2024-01-15 11:00'
+  },
+  {
+    id: 'approval-010',
+    bookingId: 'booking-007',
+    bookingTitle: '面试 - 高级前端工程师',
+    applicantName: '蒋经理',
+    applicantDepartment: '技术部',
+    date: today,
+    startTime: '14:30',
+    endTime: '15:30',
+    attendeeCount: 3,
+    role: 'it',
+    roleName: 'IT支持',
+    status: 'cancelled',
+    comment: '预约已取消',
+    createdAt: '2024-01-14 17:00',
+    approvedAt: '2024-01-15 11:00'
   }
 ]
 

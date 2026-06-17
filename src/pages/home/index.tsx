@@ -83,6 +83,16 @@ const HomePage: React.FC = () => {
     return map[type] || '📋'
   }
 
+  const getResultText = (result: string) => {
+    const map: Record<string, { text: string; color: string }> = {
+      submitted: { text: '已提交', color: '#2563EB' },
+      approved: { text: '已通过', color: '#059669' },
+      rejected: { text: '已拒绝', color: '#DC2626' },
+      cancelled: { text: '已取消', color: '#6B7280' }
+    }
+    return map[result] || { text: '未知', color: '#6B7280' }
+  }
+
   const greeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return '早上好'
@@ -188,28 +198,37 @@ const HomePage: React.FC = () => {
                 <Text className={styles.emptyText}>暂无消息</Text>
               </View>
             ) : (
-              recentNotifications.map(notification => (
-                <View
-                  key={notification.id}
-                  className={`${styles.notificationItem} ${!notification.read && styles.unread}`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <View className={styles.notifIcon}>
-                    <Text>{getNotifIcon(notification.type)}</Text>
-                  </View>
-                  <View className={styles.notifContent}>
-                    <View className={styles.notifHeader}>
-                      <Text className={styles.notifTitle}>{notification.title}</Text>
-                      <Text className={styles.notifTime}>{notification.createdAt.split(' ')[1]}</Text>
+              recentNotifications.map(notification => {
+                const resultInfo = getResultText(notification.result)
+                return (
+                  <View
+                    key={notification.id}
+                    className={`${styles.notificationItem} ${!notification.read && styles.unread}`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <View className={styles.notifIcon}>
+                      <Text>{getNotifIcon(notification.type)}</Text>
                     </View>
-                    <Text className={styles.notifMsg}>{notification.content}</Text>
-                    {notification.handlerName && (
-                      <Text className={styles.notifHandler}>处理人：{notification.handlerName}</Text>
-                    )}
+                    <View className={styles.notifContent}>
+                      <View className={styles.notifHeader}>
+                        <Text className={styles.notifTitle}>{notification.title}</Text>
+                        <View
+                          className={styles.notifResultTag}
+                          style={{ backgroundColor: resultInfo.color }}
+                        >
+                          <Text>{resultInfo.text}</Text>
+                        </View>
+                      </View>
+                      <Text className={styles.notifBookingTitle}>{notification.bookingTitle}</Text>
+                      <View className={styles.notifMeta}>
+                        <Text className={styles.notifMetaText}>处理人：{notification.handlerName}</Text>
+                        <Text className={styles.notifTime}>{notification.createdAt}</Text>
+                      </View>
+                    </View>
+                    {!notification.read && <View className={styles.redDot} />}
                   </View>
-                  {!notification.read && <View className={styles.redDot} />}
-                </View>
-              ))
+                )
+              })
             )}
           </View>
         </View>

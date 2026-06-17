@@ -3,7 +3,7 @@ import Taro from '@tarojs/taro'
 import { Booking, ApprovalStep } from '@/types/booking'
 import { BookingStatus, RoomBookingSlot } from '@/types/room'
 import { ApprovalRecord } from '@/types/approval'
-import { Notification, NotificationType } from '@/types/notification'
+import { Notification, NotificationType, NotificationResult } from '@/types/notification'
 import { mockBookings } from '@/data/bookings'
 import { mockApprovals } from '@/data/approvals'
 import { formatDateTime } from '@/utils/date'
@@ -77,42 +77,64 @@ const buildNextApproval = (booking: Booking, nextStep: ApprovalStep): ApprovalRe
 const buildNotification = (
   type: NotificationType,
   booking: Booking,
-  handlerName?: string,
-  result?: 'approved' | 'rejected' | 'cancelled'
+  handlerNameParam?: string
 ): Notification => {
   const now = formatDateTime(new Date())
-  const configs: Record<NotificationType, { title: string; content: string }> = {
-    booking_submitted: {
-      title: '预约已提交',
-      content: `您的预约「${booking.title}」已提交，等待审批中`
-    },
-    booking_approved: {
-      title: '预约已通过',
-      content: `您的预约「${booking.title}」已通过全部审批，会议已生效`
-    },
-    booking_rejected: {
-      title: '预约已拒绝',
-      content: `您的预约「${booking.title}」被${handlerName || '审批人'}拒绝`
-    },
-    booking_cancelled: {
-      title: '预约已取消',
-      content: `您的预约「${booking.title}」已被取消`
-    },
-    step_approved: {
-      title: '审批进度更新',
-      content: `${handlerName || '审批人'}已通过您的预约「${booking.title}」`
-    },
-    step_rejected: {
-      title: '审批进度更新',
-      content: `${handlerName || '审批人'}已拒绝您的预约「${booking.title}」`
-    }
+
+  let result: NotificationResult
+  let handlerName: string
+  let title: string
+  let content: string
+
+  switch (type) {
+    case 'booking_submitted':
+      result = 'submitted'
+      handlerName = booking.applicantName
+      title = '预约已提交'
+      content = `「${booking.title}」已提交，等待审批`
+      break
+    case 'booking_approved':
+      result = 'approved'
+      handlerName = handlerNameParam || 'IT支持'
+      title = '预约已通过'
+      content = `「${booking.title}」已通过全部审批，会议已生效`
+      break
+    case 'booking_rejected':
+      result = 'rejected'
+      handlerName = handlerNameParam || '审批人'
+      title = '预约已拒绝'
+      content = `「${booking.title}」审批未通过`
+      break
+    case 'booking_cancelled':
+      result = 'cancelled'
+      handlerName = handlerNameParam || booking.applicantName
+      title = '预约已取消'
+      content = `「${booking.title}」已被取消`
+      break
+    case 'step_approved':
+      result = 'approved'
+      handlerName = handlerNameParam || '审批人'
+      title = '审批进度更新'
+      content = `「${booking.title}」通过一级审批`
+      break
+    case 'step_rejected':
+      result = 'rejected'
+      handlerName = handlerNameParam || '审批人'
+      title = '审批进度更新'
+      content = `「${booking.title}」审批被驳回`
+      break
+    default:
+      result = 'submitted'
+      handlerName = handlerNameParam || booking.applicantName
+      title = '系统通知'
+      content = booking.title
   }
-  const cfg = configs[type]
+
   return {
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     type,
-    title: cfg.title,
-    content: cfg.content,
+    title,
+    content,
     bookingId: booking.id,
     bookingTitle: booking.title,
     handlerName,
@@ -235,7 +257,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       const booking = bookings.find(b => b.id === id)
       if (booking) {
-        const notification = buildNotification('booking_cancelled', booking, undefined, 'cancelled')
+        const notification = buildNotification('booking_cancelled', booking)
         addNotification(notification)
       }
       return
@@ -334,10 +356,10 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
     })
 
     if (newStatus === 'approved') {
-      const notification = buildNotification('booking_approved', newBookingState, handlerName, 'approved')
+      const notification = buildNotification('booking_approved', newBookingState, handlerName)
       addNotification(notification)
     } else {
-      const notification = buildNotification('step_approved', newBookingState, handlerName, 'approved')
+      const notification = buildNotification('step_approved', newBookingState, handlerName)
       addNotification(notification)
     }
 
@@ -396,7 +418,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       return { ...approval, status: 'rejected' as const, comment, approvedAt: now }
     }))
 
-    const notification = buildNotification('booking_rejected', newBookingState, handlerName, 'rejected')
+    const notification = buildNotification('booking_rejected', newBookingState, handlerName)
     addNotification(notification)
 
     console.log('[AppStore] rejectStep 成功')

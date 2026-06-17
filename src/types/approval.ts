@@ -10,10 +10,10 @@ export interface ApprovalRecord {
   attendeeCount: number
   role: 'department_head' | 'admin' | 'it'
   roleName: string
-  status: 'pending' | 'approved' | 'rejected'
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
   comment?: string
   createdAt: string
   approvedAt?: string
 }
 
-export type ApprovalType = 'pending' | 'approved' | 'rejected'
+export type ApprovalType = 'pending' | 'approved' | 'rejected' | 'cancelled'

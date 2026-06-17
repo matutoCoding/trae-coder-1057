@@ -13,7 +13,7 @@ const ALL_ROLES: Array<{ role: 'department_head' | 'admin' | 'it'; label: string
   { role: 'it', label: 'IT支持', color: '#7C3AED' }
 ]
 
-const DEPARTMENTS = ['全部', '产品部', '研发部', '市场部', '人事部', '财务部', '运营部']
+const DEPARTMENTS = ['全部', '技术部', '销售部', '人力资源部', '总经办', '产品部', '市场部']
 
 const ApprovalPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected' | 'cancelled'>('pending')
