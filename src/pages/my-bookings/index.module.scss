@@ -1,0 +1,235 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+}
+
+.header {
+  padding: $spacing-xl $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, #1D4ED8 100%);
+}
+
+.title {
+  font-size: $font-size-2xl;
+  font-weight: $font-bold;
+  color: $color-white;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.statusTabs {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  background-color: $color-white;
+  border-bottom: 1rpx solid $color-border-light;
+  white-space: nowrap;
+}
+
+.statusTab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  background-color: $color-bg-input;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary;
+
+    :global(text) {
+      color: $color-white !important;
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.tabLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.tabCount {
+  min-width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  padding: 0 8rpx;
+  border-radius: $radius-round;
+  background-color: rgba(0, 0, 0, 0.06);
+  font-size: 20rpx;
+  color: $color-text-secondary;
+  text-align: center;
+}
+
+.bookingList {
+  padding: $spacing-md $page-padding;
+  padding-bottom: 140rpx;
+}
+
+.bookingCard {
+  @include card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  position: relative;
+  overflow: hidden;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.bookingTitle {
+  flex: 1;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-right: $spacing-sm;
+  line-height: 1.4;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.infoLabel {
+  font-size: $font-size-base;
+  width: 40rpx;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.durationText {
+  color: $color-text-tertiary;
+  font-size: 24rpx;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-border-light;
+}
+
+.cancelBtn {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-button;
+  background-color: $color-error-bg;
+  color: $color-error;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.approvalHint {
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
+  border-radius: $radius-sm;
+  border-left: 4rpx solid $color-warning;
+}
+
+.hintText {
+  font-size: 24rpx;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.emptyState {
+  padding: $spacing-2xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-base;
+  color: $color-text-tertiary;
+}
+
+.emptyBtn {
+  padding: $spacing-md $spacing-2xl;
+  background-color: $color-primary;
+  color: $color-white;
+  border-radius: $radius-button;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  margin-top: $spacing-sm;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+.fab {
+  position: fixed;
+  right: $spacing-lg;
+  bottom: calc(#{$spacing-xl} + env(safe-area-inset-bottom));
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, #1D4ED8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.4);
+  z-index: 100;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+}
+
+.fabIcon {
+  font-size: 56rpx;
+  color: $color-white;
+  font-weight: 300;
+  line-height: 1;
+  margin-top: -4rpx;
+}

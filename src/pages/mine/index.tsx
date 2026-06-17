@@ -5,7 +5,7 @@ import { useAppStore } from '@/store/AppStore'
 import styles from './index.module.scss'
 
 const MinePage: React.FC = () => {
-  const { bookings, getPendingApprovalsByRole } = useAppStore()
+  const { bookings, getPendingApprovalsByRole, clearAllData } = useAppStore()
   const [userInfo] = useState({
     name: '张明',
     department: '产品部',
@@ -32,7 +32,7 @@ const MinePage: React.FC = () => {
   }, [getPendingApprovalsByRole])
 
   const goToMyBookings = () => {
-    Taro.showToast({ title: '我的预约', icon: 'none' })
+    Taro.navigateTo({ url: '/pages/my-bookings/index' })
   }
 
   const goToMyApprovals = () => {
@@ -51,18 +51,8 @@ const MinePage: React.FC = () => {
     Taro.showToast({ title: '关于我们', icon: 'none' })
   }
 
-  const handleLogout = () => {
-    Taro.showModal({
-      title: '退出登录',
-      content: '确定要退出登录吗？',
-      confirmColor: '#DC2626',
-      success: (res) => {
-        if (res.confirm) {
-          Taro.showToast({ title: '已退出登录', icon: 'none' })
-          console.log('[Auth] 用户退出登录')
-        }
-      }
-    })
+  const handleReset = () => {
+    clearAllData()
   }
 
   const goToCreateBooking = () => {
@@ -163,8 +153,8 @@ const MinePage: React.FC = () => {
           </View>
         </View>
 
-        <View className={styles.logoutBtn} onClick={handleLogout}>
-          <Text>退出登录</Text>
+        <View className={styles.logoutBtn} onClick={handleReset}>
+          <Text>重置所有数据</Text>
         </View>
 
         <View style={{ height: '100rpx' }} />

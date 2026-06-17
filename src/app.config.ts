@@ -7,7 +7,8 @@ export default defineAppConfig({
     'pages/booking-detail/index',
     'pages/room-detail/index',
     'pages/approval-detail/index',
-    'pages/create-booking/index'
+    'pages/create-booking/index',
+    'pages/my-bookings/index'
   ],
   window: {
     backgroundTextStyle: 'light',

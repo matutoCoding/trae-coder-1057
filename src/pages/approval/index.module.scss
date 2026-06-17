@@ -5,6 +5,73 @@
   background-color: $color-bg-page;
 }
 
+.pageHeader {
+  padding: $spacing-xl $page-padding;
+  background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+}
+
+.pageTitle {
+  font-size: $font-size-2xl;
+  font-weight: $font-bold;
+  color: $color-white;
+  margin-bottom: $spacing-xs;
+}
+
+.pageSubtitle {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.roleSelector {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  background-color: $color-white;
+  border-bottom: 1rpx solid $color-border-light;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.roleChip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  background-color: $color-bg-input;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    :global(text) {
+      color: $color-white !important;
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.roleLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.roleCount {
+  min-width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  padding: 0 8rpx;
+  border-radius: $radius-round;
+  background-color: rgba(0, 0, 0, 0.08);
+  font-size: 20rpx;
+  color: $color-text-secondary;
+  text-align: center;
+}
+
 .tabs {
   display: flex;
   background-color: $color-white;

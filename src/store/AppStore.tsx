@@ -1,10 +1,14 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
+import Taro from '@tarojs/taro'
 import { Booking, ApprovalStep } from '@/types/booking'
 import { BookingStatus, RoomBookingSlot } from '@/types/room'
 import { ApprovalRecord } from '@/types/approval'
 import { mockBookings } from '@/data/bookings'
 import { mockApprovals } from '@/data/approvals'
 import { formatDateTime } from '@/utils/date'
+
+const STORAGE_KEY_BOOKINGS = 'meeting_room_bookings'
+const STORAGE_KEY_APPROVALS = 'meeting_room_approvals'
 
 interface AppStoreContextType {
   bookings: Booking[]
@@ -19,9 +23,33 @@ interface AppStoreContextType {
   getPendingApprovalsByRole: (role: 'department_head' | 'admin' | 'it') => ApprovalRecord[]
   getApprovalCountByStatus: (status: 'pending' | 'approved' | 'rejected') => number
   getRoomBookingsSlots: (roomId: string, date: string) => RoomBookingSlot[]
+  clearAllData: () => void
 }
 
 const AppStoreContext = createContext<AppStoreContextType | null>(null)
+
+const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const data = Taro.getStorageSync(key)
+    if (data && data !== '') {
+      console.log(`[AppStore] 从 Storage 加载 ${key}:`, data.length, '条')
+      return JSON.parse(data) as T
+    }
+  } catch (e) {
+    console.warn(`[AppStore] 加载 ${key} 失败:`, e)
+  }
+  console.log(`[AppStore] 使用默认数据 ${key}:`, defaultValue.length, '条')
+  return defaultValue
+}
+
+const saveToStorage = <T,>(key: string, data: T) => {
+  try {
+    Taro.setStorageSync(key, JSON.stringify(data))
+    console.log(`[AppStore] 已同步到 Storage ${key}:`, (data as any[]).length, '条')
+  } catch (e) {
+    console.warn(`[AppStore] 保存 ${key} 失败:`, e)
+  }
+}
 
 const buildNextApproval = (booking: Booking, nextStep: ApprovalStep): ApprovalRecord => ({
   id: `approval-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -40,8 +68,40 @@ const buildNextApproval = (booking: Booking, nextStep: ApprovalStep): ApprovalRe
 })
 
 export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [bookings, setBookings] = useState<Booking[]>(() => [...mockBookings])
-  const [approvals, setApprovals] = useState<ApprovalRecord[]>(() => [...mockApprovals])
+  const [bookings, setBookings] = useState<Booking[]>(() =>
+    loadFromStorage(STORAGE_KEY_BOOKINGS, [...mockBookings])
+  )
+  const [approvals, setApprovals] = useState<ApprovalRecord[]>(() =>
+    loadFromStorage(STORAGE_KEY_APPROVALS, [...mockApprovals])
+  )
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEY_BOOKINGS, bookings)
+  }, [bookings])
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEY_APPROVALS, approvals)
+  }, [approvals])
+
+  const clearAllData = useCallback(() => {
+    Taro.showModal({
+      title: '重置数据',
+      content: '确定要清空所有预约和审批数据吗？',
+      success: (res) => {
+        if (res.confirm) {
+          try {
+            Taro.removeStorageSync(STORAGE_KEY_BOOKINGS)
+            Taro.removeStorageSync(STORAGE_KEY_APPROVALS)
+            setBookings([...mockBookings])
+            setApprovals([...mockApprovals])
+            Taro.showToast({ title: '已重置数据', icon: 'success' })
+          } catch (e) {
+            console.warn('[AppStore] 清空数据失败:', e)
+          }
+        }
+      }
+    })
+  }, [])
 
   const addBooking = useCallback((booking: Booking) => {
     console.log('[AppStore] addBooking:', booking.id, booking.title)
@@ -75,7 +135,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const updateBooking = useCallback((id: string, updates: Partial<Booking>) => {
     console.log('[AppStore] updateBooking:', id, updates)
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b))
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates, updatedAt: formatDateTime(new Date()) } : b))
   }, [])
 
   const approveStep = useCallback((
@@ -262,7 +322,8 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
         getBookingsByRoom,
         getPendingApprovalsByRole,
         getApprovalCountByStatus,
-        getRoomBookingsSlots
+        getRoomBookingsSlots,
+        clearAllData
       }}
     >
       {children}
