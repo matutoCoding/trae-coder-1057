@@ -8,18 +8,24 @@ import { useAppStore } from '@/store/AppStore'
 import styles from './index.module.scss'
 
 const HomePage: React.FC = () => {
-  const { bookings } = useAppStore()
+  const { bookings, notifications, markNotificationRead, getUnreadNotificationCount } = useAppStore()
   const today = getToday()
 
-  useDidShow(() => {
-    // 切换回页面时自动响应式数据，bookings变化自动触发重渲染
-  })
+  useDidShow(() => {})
 
   const todayBookings = useMemo(() => {
     return bookings
       .filter(b => b.date === today)
       .filter(b => b.status === 'approved' || b.status === 'pending')
   }, [bookings, today])
+
+  const recentNotifications = useMemo(() => {
+    return notifications.slice(0, 5)
+  }, [notifications])
+
+  const unreadCount = useMemo(() => {
+    return getUnreadNotificationCount()
+  }, [notifications, getUnreadNotificationCount])
 
   const stats = useMemo(() => {
     const totalRooms = mockRooms.filter(r => r.status !== 'maintenance').length
@@ -56,6 +62,25 @@ const HomePage: React.FC = () => {
     Taro.navigateTo({
       url: `/pages/booking-detail/index?id=${id}`
     })
+  }
+
+  const handleNotificationClick = (notification: any) => {
+    if (!notification.read) {
+      markNotificationRead(notification.id)
+    }
+    goToBookingDetail(notification.bookingId)
+  }
+
+  const getNotifIcon = (type: string) => {
+    const map: Record<string, string> = {
+      booking_submitted: '📝',
+      booking_approved: '✅',
+      booking_rejected: '❌',
+      booking_cancelled: '🚫',
+      step_approved: '⏳',
+      step_rejected: '⚠️'
+    }
+    return map[type] || '📋'
   }
 
   const greeting = () => {
@@ -144,6 +169,45 @@ const HomePage: React.FC = () => {
                     <Text className={styles.bookingRoom}>{booking.roomName || '待分配'}</Text>
                   </View>
                   <StatusBadge status={booking.status} />
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
+        <View className={styles.section}>
+          <View className={styles.sectionHeader}>
+            <Text className={styles.sectionTitle}>最近消息</Text>
+            {unreadCount > 0 && (
+              <Text className={styles.unreadBadge}>{unreadCount} 条未读</Text>
+            )}
+          </View>
+          <View className={styles.notifications}>
+            {recentNotifications.length === 0 ? (
+              <View className={styles.emptyState}>
+                <Text className={styles.emptyText}>暂无消息</Text>
+              </View>
+            ) : (
+              recentNotifications.map(notification => (
+                <View
+                  key={notification.id}
+                  className={`${styles.notificationItem} ${!notification.read && styles.unread}`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <View className={styles.notifIcon}>
+                    <Text>{getNotifIcon(notification.type)}</Text>
+                  </View>
+                  <View className={styles.notifContent}>
+                    <View className={styles.notifHeader}>
+                      <Text className={styles.notifTitle}>{notification.title}</Text>
+                      <Text className={styles.notifTime}>{notification.createdAt.split(' ')[1]}</Text>
+                    </View>
+                    <Text className={styles.notifMsg}>{notification.content}</Text>
+                    {notification.handlerName && (
+                      <Text className={styles.notifHandler}>处理人：{notification.handlerName}</Text>
+                    )}
+                  </View>
+                  {!notification.read && <View className={styles.redDot} />}
                 </View>
               ))
             )}

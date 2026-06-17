@@ -192,3 +192,205 @@
 .list {
   margin-bottom: $spacing-lg;
 }
+
+.pageHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.filterBtn {
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-white;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  position: relative;
+  transition: all $transition-base;
+
+  &.activeFilter {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.filterDot {
+  position: absolute;
+  top: 8rpx;
+  right: 12rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  background-color: $color-error;
+}
+
+.filterPanel {
+  background-color: $color-white;
+  padding: $spacing-lg $page-padding;
+  border-bottom: 1rpx solid $color-border-light;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.filterRow {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.filterLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.filterPicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background-color: $color-bg-input;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.pickerArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+  transform: rotate(90deg);
+}
+
+.deptScroll {
+  display: flex;
+  gap: $spacing-sm;
+  white-space: nowrap;
+}
+
+.deptChip {
+  flex-shrink: 0;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-input;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    color: $color-white;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.roleChips {
+  display: flex;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.roleChipSmall {
+  flex-shrink: 0;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-input;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    color: $color-white;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.filterActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-sm;
+}
+
+.clearBtn {
+  flex: 1;
+  padding: $spacing-md;
+  text-align: center;
+  background-color: $color-bg-input;
+  border-radius: $radius-button;
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.applyBtn {
+  flex: 1;
+  padding: $spacing-md;
+  text-align: center;
+  background-color: $color-primary;
+  border-radius: $radius-button;
+  font-size: $font-size-base;
+  color: $color-white;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.badgeSuccess {
+  background-color: $color-success !important;
+}
+
+.badgeError {
+  background-color: $color-error !important;
+}
+
+.badgeGrey {
+  background-color: $color-text-tertiary !important;
+}
+
+.activeFilterHint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background-color: #EFF6FF;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-md;
+  border-left: 4rpx solid $color-primary;
+}
+
+.filterHintText {
+  flex: 1;
+  font-size: 24rpx;
+  color: $color-primary;
+  margin-right: $spacing-sm;
+}
+
+.filterClear {
+  font-size: 24rpx;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+}

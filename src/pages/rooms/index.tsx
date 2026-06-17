@@ -4,7 +4,17 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import { mockRooms } from '@/data/rooms'
 import RoomCard from '@/components/RoomCard'
-import { getToday, formatDate, generateTimeSlots, timeToMinutes } from '@/utils/date'
+import {
+  getToday,
+  formatDate,
+  generateTimeSlots,
+  timeToMinutes,
+  getWeekDatesFromMonday,
+  getPrevWeek,
+  getNextWeek,
+  getWeekStart,
+  getDayOfWeek
+} from '@/utils/date'
 import { useAppStore } from '@/store/AppStore'
 import StatusBadge from '@/components/StatusBadge'
 import styles from './index.module.scss'
@@ -17,7 +27,7 @@ const PIXELS_PER_MINUTE = 1.2
 const RoomsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('')
   const [activeFilter, setActiveFilter] = useState('all')
-  const [viewMode, setViewMode] = useState<'list' | 'schedule'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'day' | 'week'>('list')
   const [currentDate, setCurrentDate] = useState(getToday())
   const { bookings } = useAppStore()
 
@@ -39,6 +49,13 @@ const RoomsPage: React.FC = () => {
     }
     return slots
   }, [])
+
+  const weekDates = useMemo(() => {
+    return getWeekDatesFromMonday(currentDate)
+  }, [currentDate])
+
+  const weekStart = useMemo(() => getWeekStart(currentDate), [currentDate])
+  const weekEnd = useMemo(() => weekDates[weekDates.length - 1], [weekDates])
 
   const timeAxisWidth = (END_HOUR - START_HOUR) * SLOT_MINUTES * PIXELS_PER_MINUTE
 
@@ -73,7 +90,7 @@ const RoomsPage: React.FC = () => {
     return rooms
   }, [searchText, activeFilter])
 
-  const roomSchedules = useMemo(() => {
+  const dayRoomSchedules = useMemo(() => {
     const map = new Map<string, any[]>()
     filteredRooms.forEach(room => {
       const roomBookings = bookings.filter(
@@ -84,6 +101,22 @@ const RoomsPage: React.FC = () => {
     })
     return map
   }, [filteredRooms, currentDate, bookings])
+
+  const weekRoomSchedules = useMemo(() => {
+    const map = new Map<string, Map<string, any[]>>()
+    filteredRooms.forEach(room => {
+      const dayMap = new Map<string, any[]>()
+      weekDates.forEach(date => {
+        const dayBookings = bookings.filter(
+          b => b.roomId === room.id && b.date === date &&
+               (b.status === 'approved' || b.status === 'pending')
+        )
+        dayMap.set(date, dayBookings)
+      })
+      map.set(room.id, dayMap)
+    })
+    return map
+  }, [filteredRooms, weekDates, bookings])
 
   const handlePrevDay = () => {
     const date = new Date(currentDate)
@@ -97,9 +130,23 @@ const RoomsPage: React.FC = () => {
     setCurrentDate(date.toISOString().split('T')[0])
   }
 
+  const handlePrevWeek = () => {
+    setCurrentDate(getPrevWeek(weekStart))
+  }
+
+  const handleNextWeek = () => {
+    setCurrentDate(getNextWeek(weekStart))
+  }
+
   const goToRoomDetail = (id: string) => {
     Taro.navigateTo({
       url: `/pages/room-detail/index?id=${id}&date=${currentDate}`
+    })
+  }
+
+  const goToBookingDetail = (bookingId: string) => {
+    Taro.navigateTo({
+      url: `/pages/booking-detail/index?id=${bookingId}`
     })
   }
 
@@ -111,7 +158,7 @@ const RoomsPage: React.FC = () => {
     return { left: `${left}rpx`, width: `${width}rpx` }
   }
 
-  const renderScheduleView = () => (
+  const renderDayScheduleView = () => (
     <ScrollView scrollX className={styles.scheduleWrapper}>
       <View style={{ width: `${240 + timeAxisWidth}rpx` }}>
         <View className={styles.scheduleHeader}>
@@ -131,7 +178,7 @@ const RoomsPage: React.FC = () => {
           </View>
         ) : (
           filteredRooms.map(room => {
-            const roomBookings = roomSchedules.get(room.id) || []
+            const roomBookings = dayRoomSchedules.get(room.id) || []
             return (
               <View
                 key={room.id}
@@ -156,6 +203,10 @@ const RoomsPage: React.FC = () => {
                         b.status === 'pending' && styles.pendingBooking
                       )}
                       style={getBookingStyle(b)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        goToBookingDetail(b.id)
+                      }}
                     >
                       <Text className={styles.scheduleBookingTitle}>{b.title}</Text>
                       <Text className={styles.scheduleBookingTime}>{b.startTime}-{b.endTime}</Text>
@@ -169,6 +220,124 @@ const RoomsPage: React.FC = () => {
       </View>
     </ScrollView>
   )
+
+  const renderWeekScheduleView = () => {
+    const dayWidth = 200
+    const totalWidth = 240 + weekDates.length * dayWidth
+    return (
+      <ScrollView scrollX className={styles.weekWrapper}>
+        <View style={{ width: `${totalWidth}rpx` }}>
+          <View className={styles.weekHeader}>
+            <View className={styles.scheduleRoomHeader}><Text>会议室</Text></View>
+            {weekDates.map(date => (
+              <View
+                key={date}
+                className={classnames(
+                  styles.weekDayHeader,
+                  date === getToday() && styles.todayCol
+                )}
+                style={{ width: `${dayWidth}rpx` }}
+              >
+                <Text className={styles.weekDay}>{getDayOfWeek(date)}</Text>
+                <Text className={styles.weekDate}>{formatDate(date, 'MM/DD')}</Text>
+                {date === getToday() && <View className={styles.todayDot} />}
+              </View>
+            ))}
+          </View>
+
+          {filteredRooms.length === 0 ? (
+            <View className={styles.emptyState}>
+              <Text className={styles.emptyIcon}>🏢</Text>
+              <Text className={styles.emptyText}>暂无符合条件的会议室</Text>
+            </View>
+          ) : (
+            filteredRooms.map(room => {
+              const dayMap = weekRoomSchedules.get(room.id) || new Map()
+              return (
+                <View key={room.id} className={styles.weekRow}>
+                  <View
+                    className={styles.scheduleRoomCol}
+                    onClick={() => goToRoomDetail(room.id)}
+                  >
+                    <Text className={styles.scheduleRoomName}>{room.name}</Text>
+                    <Text className={styles.scheduleRoomInfo}>{room.floor} · {room.capacity}人</Text>
+                  </View>
+                  {weekDates.map(date => {
+                    const dayBookings = dayMap.get(date) || []
+                    return (
+                      <View
+                        key={`${room.id}-${date}`}
+                        className={classnames(
+                          styles.weekDayCell,
+                          date === getToday() && styles.todayCol
+                        )}
+                        style={{ width: `${dayWidth}rpx` }}
+                      >
+                        {dayBookings.length === 0 ? (
+                          <Text className={styles.emptySlot}>空闲</Text>
+                        ) : (
+                          dayBookings.map(b => (
+                            <View
+                              key={b.id}
+                              className={classnames(
+                                styles.weekBooking,
+                                b.status === 'pending' && styles.pendingBooking
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                goToBookingDetail(b.id)
+                              }}
+                            >
+                              <Text className={styles.weekBookingTitle}>{b.title}</Text>
+                              <Text className={styles.weekBookingTime}>
+                                {b.startTime}-{b.endTime}
+                              </Text>
+                            </View>
+                          ))
+                        )}
+                      </View>
+                    )
+                  })}
+                </View>
+              )
+            })
+          )}
+        </View>
+      </ScrollView>
+    )
+  }
+
+  const renderDateNav = () => {
+    if (viewMode === 'list') return null
+    if (viewMode === 'day') {
+      return (
+        <View className={styles.dateNav}>
+          <View className={styles.navBtn} onClick={handlePrevDay}>
+            <Text>‹</Text>
+          </View>
+          <Text className={styles.currentDate}>
+            {formatDate(currentDate, 'YYYY年MM月DD日')} {getDayOfWeek(currentDate)}
+          </Text>
+          <View className={styles.navBtn} onClick={handleNextDay}>
+            <Text>›</Text>
+          </View>
+        </View>
+      )
+    }
+    return (
+      <View className={styles.dateNav}>
+        <View className={styles.navBtn} onClick={handlePrevWeek}>
+          <Text>‹ 上一周</Text>
+        </View>
+        <Text className={styles.currentDate}>
+          {formatDate(weekStart, 'MM月DD日')} - {formatDate(weekEnd, 'MM月DD日')}
+        </Text>
+        <View className={styles.navBtn} onClick={handleNextWeek}>
+          <Text>下一周 ›</Text>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View className={styles.page}>
@@ -195,16 +364,8 @@ const RoomsPage: React.FC = () => {
         </ScrollView>
       </View>
 
-      <View className={styles.dateSelector}>
-        <View className={styles.dateNav}>
-          <View className={styles.navBtn} onClick={handlePrevDay}>
-            <Text>‹</Text>
-          </View>
-          <Text className={styles.currentDate}>{formatDate(currentDate, 'YYYY年MM月DD日')}</Text>
-          <View className={styles.navBtn} onClick={handleNextDay}>
-            <Text>›</Text>
-          </View>
-        </View>
+      <View className={styles.controlBar}>
+        {renderDateNav()}
         <View className={styles.viewToggle}>
           <View
             className={classnames(styles.toggleBtn, viewMode === 'list' && styles.active)}
@@ -213,15 +374,21 @@ const RoomsPage: React.FC = () => {
             <Text>列表</Text>
           </View>
           <View
-            className={classnames(styles.toggleBtn, viewMode === 'schedule' && styles.active)}
-            onClick={() => setViewMode('schedule')}
+            className={classnames(styles.toggleBtn, viewMode === 'day' && styles.active)}
+            onClick={() => setViewMode('day')}
           >
-            <Text>排期</Text>
+            <Text>日排期</Text>
+          </View>
+          <View
+            className={classnames(styles.toggleBtn, viewMode === 'week' && styles.active)}
+            onClick={() => setViewMode('week')}
+          >
+            <Text>周排期</Text>
           </View>
         </View>
       </View>
 
-      {viewMode === 'list' ? (
+      {viewMode === 'list' && (
         <ScrollView scrollY className={styles.roomList}>
           {filteredRooms.length === 0 ? (
             <View className={styles.emptyState}>
@@ -234,9 +401,10 @@ const RoomsPage: React.FC = () => {
             ))
           )}
         </ScrollView>
-      ) : (
-        renderScheduleView()
       )}
+
+      {viewMode === 'day' && renderDayScheduleView()}
+      {viewMode === 'week' && renderWeekScheduleView()}
     </View>
   )
 }

@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Picker } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import { useAppStore } from '@/store/AppStore'
+import { formatDate, getToday } from '@/utils/date'
 import ApprovalCard from '@/components/ApprovalCard'
 import styles from './index.module.scss'
 
@@ -12,9 +13,16 @@ const ALL_ROLES: Array<{ role: 'department_head' | 'admin' | 'it'; label: string
   { role: 'it', label: 'IT支持', color: '#7C3AED' }
 ]
 
+const DEPARTMENTS = ['全部', '产品部', '研发部', '市场部', '人事部', '财务部', '运营部']
+
 const ApprovalPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected'>('pending')
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected' | 'cancelled'>('pending')
   const [currentRole, setCurrentRole] = useState<'all' | 'department_head' | 'admin' | 'it'>('all')
+  const [showFilter, setShowFilter] = useState(false)
+  const [filterDate, setFilterDate] = useState('')
+  const [filterDept, setFilterDept] = useState('全部')
+  const [filterRole, setFilterRole] = useState<'all' | 'department_head' | 'admin' | 'it'>('all')
+
   const {
     approvals,
     approveStep,
@@ -29,9 +37,15 @@ const ApprovalPage: React.FC = () => {
     return [currentRole]
   }, [currentRole])
 
+  const filterRoleList = useMemo(() => {
+    if (filterRole === 'all') return ['department_head', 'admin', 'it'] as const
+    return [filterRole]
+  }, [filterRole])
+
   const pendingApprovals = useMemo(() => {
     const allPending: any[] = []
     roleList.forEach(role => {
+      if (filterRole !== 'all' && role !== filterRole) return
       allPending.push(...getPendingApprovalsByRole(role))
     })
     const seen = new Set()
@@ -43,25 +57,51 @@ const ApprovalPage: React.FC = () => {
       const order = ['department_head', 'admin', 'it']
       return order.indexOf(a.role) - order.indexOf(b.role)
     })
-  }, [roleList, getPendingApprovalsByRole])
+  }, [roleList, filterRole, getPendingApprovalsByRole])
 
   const handledApprovals = useMemo(() => {
     return approvals.filter(a =>
-      roleList.includes(a.role as any) &&
+      filterRoleList.includes(a.role as any) &&
       a.status !== 'pending'
     )
-  }, [roleList, approvals])
+  }, [filterRoleList, approvals])
+
+  const allApprovals = useMemo(() => {
+    return [...pendingApprovals, ...handledApprovals]
+  }, [pendingApprovals, handledApprovals])
 
   const filteredApprovals = useMemo(() => {
-    if (activeTab === 'pending') return pendingApprovals
-    if (activeTab === 'approved') return handledApprovals.filter(a => a.status === 'approved')
-    return handledApprovals.filter(a => a.status === 'rejected')
-  }, [activeTab, pendingApprovals, handledApprovals])
+    let list: any[]
+    if (activeTab === 'pending') {
+      list = pendingApprovals
+    } else if (activeTab === 'approved') {
+      list = handledApprovals.filter(a => a.status === 'approved')
+    } else if (activeTab === 'rejected') {
+      list = handledApprovals.filter(a => a.status === 'rejected')
+    } else {
+      list = handledApprovals.filter(a => a.status === 'cancelled')
+    }
+
+    if (filterDate) {
+      list = list.filter(a => a.date === filterDate)
+    }
+    if (filterDept !== '全部') {
+      list = list.filter(a => a.applicantDepartment === filterDept)
+    }
+
+    return list.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt.localeCompare(a.createdAt)
+      }
+      return 0
+    })
+  }, [activeTab, pendingApprovals, handledApprovals, filterDate, filterDept])
 
   const stats = useMemo(() => ({
     pending: pendingApprovals.length,
     approved: handledApprovals.filter(a => a.status === 'approved').length,
-    rejected: handledApprovals.filter(a => a.status === 'rejected').length
+    rejected: handledApprovals.filter(a => a.status === 'rejected').length,
+    cancelled: handledApprovals.filter(a => a.status === 'cancelled').length
   }), [pendingApprovals, handledApprovals])
 
   const totalPending = useMemo(() => {
@@ -73,6 +113,10 @@ const ApprovalPage: React.FC = () => {
   const getRolePendingCount = (role: 'department_head' | 'admin' | 'it') => {
     return getPendingApprovalsByRole(role).length
   }
+
+  const hasActiveFilters = useMemo(() => {
+    return filterDate !== '' || filterDept !== '全部' || filterRole !== 'all'
+  }, [filterDate, filterDept, filterRole])
 
   const handleApprove = (approvalId: string) => {
     const approval = approvals.find(a => a.id === approvalId)
@@ -123,18 +167,97 @@ const ApprovalPage: React.FC = () => {
     })
   }
 
+  const clearFilters = () => {
+    setFilterDate('')
+    setFilterDept('全部')
+    setFilterRole('all')
+  }
+
+  const onDateChange = (e: any) => {
+    setFilterDate(e.detail.value)
+  }
+
   const tabs = [
     { key: 'pending' as const, label: '待审批' },
     { key: 'approved' as const, label: '已通过' },
-    { key: 'rejected' as const, label: '已拒绝' }
+    { key: 'rejected' as const, label: '已拒绝' },
+    { key: 'cancelled' as const, label: '已取消' }
   ]
 
   return (
     <View className={styles.page}>
       <View className={styles.pageHeader}>
-        <Text className={styles.pageTitle}>审批中心</Text>
-        <Text className={styles.pageSubtitle}>共 {totalPending} 条待处理</Text>
+        <View className={styles.pageHeaderRow}>
+          <View>
+            <Text className={styles.pageTitle}>审批中心</Text>
+            <Text className={styles.pageSubtitle}>共 {totalPending} 条待处理</Text>
+          </View>
+          <View
+            className={classnames(styles.filterBtn, hasActiveFilters && styles.activeFilter)}
+            onClick={() => setShowFilter(!showFilter)}
+          >
+            <Text>🔍 筛选</Text>
+            {hasActiveFilters && <View className={styles.filterDot} />}
+          </View>
+        </View>
       </View>
+
+      {showFilter && (
+        <View className={styles.filterPanel}>
+          <View className={styles.filterRow}>
+            <Text className={styles.filterLabel}>会议日期</Text>
+            <Picker mode='date' value={filterDate || getToday()} onChange={onDateChange}>
+              <View className={styles.filterPicker}>
+                <Text>{filterDate || '选择日期'}</Text>
+                <Text className={styles.pickerArrow}>›</Text>
+              </View>
+            </Picker>
+          </View>
+          <View className={styles.filterRow}>
+            <Text className={styles.filterLabel}>申请部门</Text>
+            <ScrollView scrollX className={styles.deptScroll}>
+              {DEPARTMENTS.map(dept => (
+                <View
+                  key={dept}
+                  className={classnames(styles.deptChip, filterDept === dept && styles.active)}
+                  onClick={() => setFilterDept(dept)}
+                >
+                  <Text>{dept}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+          <View className={styles.filterRow}>
+            <Text className={styles.filterLabel}>审批角色</Text>
+            <View className={styles.roleChips}>
+              <View
+                className={classnames(styles.roleChipSmall, filterRole === 'all' && styles.active)}
+                onClick={() => setFilterRole('all')}
+              >
+                <Text>全部</Text>
+              </View>
+              {ALL_ROLES.map(r => (
+                <View
+                  key={r.role}
+                  className={classnames(styles.roleChipSmall, filterRole === r.role && styles.active)}
+                  style={filterRole === r.role ? { backgroundColor: r.color, borderColor: r.color } : {}}
+                  onClick={() => setFilterRole(r.role)}
+                >
+                  <Text>{r.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+          <View className={styles.filterActions}>
+            <View className={styles.clearBtn} onClick={clearFilters}>
+              <Text>清除筛选</Text>
+            </View>
+            <View className={styles.applyBtn} onClick={() => setShowFilter(false)}>
+              <Text>确定</Text>
+            </View>
+          </View>
+        </View>
+      )}
 
       <View className={styles.roleSelector}>
         <View
@@ -173,6 +296,15 @@ const ApprovalPage: React.FC = () => {
             {tab.key === 'pending' && stats.pending > 0 && (
               <Text className={styles.badge}>{stats.pending}</Text>
             )}
+            {tab.key === 'approved' && stats.approved > 0 && (
+              <Text className={classnames(styles.badge, styles.badgeSuccess)}>{stats.approved}</Text>
+            )}
+            {tab.key === 'rejected' && stats.rejected > 0 && (
+              <Text className={classnames(styles.badge, styles.badgeError)}>{stats.rejected}</Text>
+            )}
+            {tab.key === 'cancelled' && stats.cancelled > 0 && (
+              <Text className={classnames(styles.badge, styles.badgeGrey)}>{stats.cancelled}</Text>
+            )}
           </View>
         ))}
       </View>
@@ -193,8 +325,23 @@ const ApprovalPage: React.FC = () => {
           </View>
         </View>
 
+        {hasActiveFilters && (
+          <View className={styles.activeFilterHint}>
+            <Text className={styles.filterHintText}>
+              已筛选：{filterDate ? `日期 ${filterDate}` : ''}
+              {filterDate && filterDept !== '全部' ? ' · ' : ''}
+              {filterDept !== '全部' ? `部门 ${filterDept}` : ''}
+              {(filterDate || filterDept !== '全部') && filterRole !== 'all' ? ' · ' : ''}
+              {filterRole !== 'all' ? `角色 ${ALL_ROLES.find(r => r.role === filterRole)?.label}` : ''}
+            </Text>
+            <Text className={styles.filterClear} onClick={clearFilters}>清除</Text>
+          </View>
+        )}
+
         <Text className={styles.sectionTitle}>
-          {activeTab === 'pending' ? '待我审批' : activeTab === 'approved' ? '已通过审批' : '已拒绝审批'}
+          {activeTab === 'pending' ? '待我审批' :
+           activeTab === 'approved' ? '已通过审批' :
+           activeTab === 'rejected' ? '已拒绝审批' : '已取消审批'}
         </Text>
 
         <View className={styles.list}>
@@ -203,7 +350,8 @@ const ApprovalPage: React.FC = () => {
               <Text className={styles.emptyIcon}>📋</Text>
               <Text className={styles.emptyText}>
                 {activeTab === 'pending' ? '暂无待审批事项' :
-                 activeTab === 'approved' ? '暂无已通过审批' : '暂无已拒绝审批'}
+                 activeTab === 'approved' ? '暂无已通过审批' :
+                 activeTab === 'rejected' ? '暂无已拒绝审批' : '暂无已取消审批'}
               </Text>
             </View>
           ) : (

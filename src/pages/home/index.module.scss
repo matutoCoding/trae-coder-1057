@@ -233,3 +233,101 @@
   font-size: 48rpx;
   color: $color-white;
 }
+
+.unreadBadge {
+  font-size: 22rpx;
+  color: $color-white;
+  background-color: $color-error;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+}
+
+.notifications {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.notificationItem {
+  @include card;
+  padding: $spacing-md;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  position: relative;
+  transition: all $transition-base;
+
+  &.unread {
+    background-color: #EFF6FF;
+    border-left: 4rpx solid $color-primary;
+  }
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.995);
+  }
+}
+
+.notifIcon {
+  font-size: 40rpx;
+  width: 64rpx;
+  height: 64rpx;
+  background-color: $color-bg-page;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notifContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.notifHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
+.notifTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+  @include text-ellipsis;
+}
+
+.notifTime {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}
+
+.notifMsg {
+  font-size: 24rpx;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  margin-bottom: 4rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notifHandler {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}
+
+.redDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background-color: $color-error;
+  flex-shrink: 0;
+  margin-top: 8rpx;
+}

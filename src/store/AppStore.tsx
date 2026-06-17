@@ -3,16 +3,19 @@ import Taro from '@tarojs/taro'
 import { Booking, ApprovalStep } from '@/types/booking'
 import { BookingStatus, RoomBookingSlot } from '@/types/room'
 import { ApprovalRecord } from '@/types/approval'
+import { Notification, NotificationType } from '@/types/notification'
 import { mockBookings } from '@/data/bookings'
 import { mockApprovals } from '@/data/approvals'
 import { formatDateTime } from '@/utils/date'
 
 const STORAGE_KEY_BOOKINGS = 'meeting_room_bookings'
 const STORAGE_KEY_APPROVALS = 'meeting_room_approvals'
+const STORAGE_KEY_NOTIFICATIONS = 'meeting_room_notifications'
 
 interface AppStoreContextType {
   bookings: Booking[]
   approvals: ApprovalRecord[]
+  notifications: Notification[]
   addBooking: (booking: Booking) => void
   updateBooking: (id: string, updates: Partial<Booking>) => void
   approveStep: (bookingId: string, role: 'department_head' | 'admin' | 'it', comment?: string) => { success: boolean; message: string }
@@ -20,9 +23,13 @@ interface AppStoreContextType {
   getBookingsByDate: (date: string) => Booking[]
   getBookingsByApplicant: (applicantId: string) => Booking[]
   getBookingsByRoom: (roomId: string, date?: string) => Booking[]
+  getBookingsByDateRange: (roomId: string, startDate: string, endDate: string) => Booking[]
   getPendingApprovalsByRole: (role: 'department_head' | 'admin' | 'it') => ApprovalRecord[]
-  getApprovalCountByStatus: (status: 'pending' | 'approved' | 'rejected') => number
+  getApprovalCountByStatus: (status: 'pending' | 'approved' | 'rejected' | 'cancelled') => number
   getRoomBookingsSlots: (roomId: string, date: string) => RoomBookingSlot[]
+  markNotificationRead: (id: string) => void
+  markAllNotificationsRead: () => void
+  getUnreadNotificationCount: () => number
   clearAllData: () => void
 }
 
@@ -32,13 +39,13 @@ const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
     const data = Taro.getStorageSync(key)
     if (data && data !== '') {
-      console.log(`[AppStore] 从 Storage 加载 ${key}:`, data.length, '条')
+      console.log(`[AppStore] 从 Storage 加载 ${key}:`, (data as string).length, '条')
       return JSON.parse(data) as T
     }
   } catch (e) {
     console.warn(`[AppStore] 加载 ${key} 失败:`, e)
   }
-  console.log(`[AppStore] 使用默认数据 ${key}:`, defaultValue.length, '条')
+  console.log(`[AppStore] 使用默认数据 ${key}:`, (defaultValue as any[]).length, '条')
   return defaultValue
 }
 
@@ -67,12 +74,65 @@ const buildNextApproval = (booking: Booking, nextStep: ApprovalStep): ApprovalRe
   createdAt: formatDateTime(new Date())
 })
 
+const buildNotification = (
+  type: NotificationType,
+  booking: Booking,
+  handlerName?: string,
+  result?: 'approved' | 'rejected' | 'cancelled'
+): Notification => {
+  const now = formatDateTime(new Date())
+  const configs: Record<NotificationType, { title: string; content: string }> = {
+    booking_submitted: {
+      title: '预约已提交',
+      content: `您的预约「${booking.title}」已提交，等待审批中`
+    },
+    booking_approved: {
+      title: '预约已通过',
+      content: `您的预约「${booking.title}」已通过全部审批，会议已生效`
+    },
+    booking_rejected: {
+      title: '预约已拒绝',
+      content: `您的预约「${booking.title}」被${handlerName || '审批人'}拒绝`
+    },
+    booking_cancelled: {
+      title: '预约已取消',
+      content: `您的预约「${booking.title}」已被取消`
+    },
+    step_approved: {
+      title: '审批进度更新',
+      content: `${handlerName || '审批人'}已通过您的预约「${booking.title}」`
+    },
+    step_rejected: {
+      title: '审批进度更新',
+      content: `${handlerName || '审批人'}已拒绝您的预约「${booking.title}」`
+    }
+  }
+  const cfg = configs[type]
+  return {
+    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    type,
+    title: cfg.title,
+    content: cfg.content,
+    bookingId: booking.id,
+    bookingTitle: booking.title,
+    handlerName,
+    result,
+    read: false,
+    createdAt: now
+  }
+}
+
+const mockNotifications: Notification[] = []
+
 export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [bookings, setBookings] = useState<Booking[]>(() =>
     loadFromStorage(STORAGE_KEY_BOOKINGS, [...mockBookings])
   )
   const [approvals, setApprovals] = useState<ApprovalRecord[]>(() =>
     loadFromStorage(STORAGE_KEY_APPROVALS, [...mockApprovals])
+  )
+  const [notifications, setNotifications] = useState<Notification[]>(() =>
+    loadFromStorage(STORAGE_KEY_NOTIFICATIONS, [...mockNotifications])
   )
 
   useEffect(() => {
@@ -83,17 +143,39 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
     saveToStorage(STORAGE_KEY_APPROVALS, approvals)
   }, [approvals])
 
+  useEffect(() => {
+    saveToStorage(STORAGE_KEY_NOTIFICATIONS, notifications)
+  }, [notifications])
+
+  const addNotification = useCallback((notification: Notification) => {
+    setNotifications(prev => [notification, ...prev])
+  }, [])
+
+  const markNotificationRead = useCallback((id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+  }, [])
+
+  const markAllNotificationsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  }, [])
+
+  const getUnreadNotificationCount = useCallback(() => {
+    return notifications.filter(n => !n.read).length
+  }, [notifications])
+
   const clearAllData = useCallback(() => {
     Taro.showModal({
       title: '重置数据',
-      content: '确定要清空所有预约和审批数据吗？',
+      content: '确定要清空所有预约、审批和通知数据吗？',
       success: (res) => {
         if (res.confirm) {
           try {
             Taro.removeStorageSync(STORAGE_KEY_BOOKINGS)
             Taro.removeStorageSync(STORAGE_KEY_APPROVALS)
+            Taro.removeStorageSync(STORAGE_KEY_NOTIFICATIONS)
             setBookings([...mockBookings])
             setApprovals([...mockApprovals])
+            setNotifications([...mockNotifications])
             Taro.showToast({ title: '已重置数据', icon: 'success' })
           } catch (e) {
             console.warn('[AppStore] 清空数据失败:', e)
@@ -131,12 +213,36 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (firstStepApproval) {
       setApprovals(prev => [firstStepApproval!, ...prev])
     }
-  }, [])
+
+    const notification = buildNotification('booking_submitted', booking)
+    addNotification(notification)
+    console.log('[AppStore] 生成通知:', notification.id, notification.title)
+  }, [addNotification])
 
   const updateBooking = useCallback((id: string, updates: Partial<Booking>) => {
     console.log('[AppStore] updateBooking:', id, updates)
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates, updatedAt: formatDateTime(new Date()) } : b))
-  }, [])
+    const now = formatDateTime(new Date())
+
+    if (updates.status === 'cancelled') {
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates, updatedAt: now } : b))
+      setApprovals(prev => prev.map(a => {
+        if (a.bookingId !== id) return a
+        if (a.status === 'pending') {
+          return { ...a, status: 'cancelled' as const, approvedAt: now, comment: '预约已取消' }
+        }
+        return a
+      }))
+
+      const booking = bookings.find(b => b.id === id)
+      if (booking) {
+        const notification = buildNotification('booking_cancelled', booking, undefined, 'cancelled')
+        addNotification(notification)
+      }
+      return
+    }
+
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates, updatedAt: now } : b))
+  }, [bookings, addNotification])
 
   const approveStep = useCallback((
     bookingId: string,
@@ -168,9 +274,16 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       return result
     }
 
+    const roleNameMap: Record<string, string> = {
+      department_head: '部门负责人',
+      admin: '行政',
+      it: 'IT支持'
+    }
+    const handlerName = roleNameMap[role]
+
     const newFlow: ApprovalStep[] = targetBooking.approvalFlow.map(step => {
       if (step.order === targetBooking!.currentStep) {
-        return { ...step, status: 'approved' as const, comment, approvedAt: now }
+        return { ...step, status: 'approved' as const, comment, approvedAt: now, approverName: handlerName }
       }
       return step
     })
@@ -220,10 +333,18 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       return list
     })
 
+    if (newStatus === 'approved') {
+      const notification = buildNotification('booking_approved', newBookingState, handlerName, 'approved')
+      addNotification(notification)
+    } else {
+      const notification = buildNotification('step_approved', newBookingState, handlerName, 'approved')
+      addNotification(notification)
+    }
+
     result = { success: true, message }
     console.log('[AppStore] approveStep 结果:', result)
     return result
-  }, [bookings])
+  }, [bookings, addNotification])
 
   const rejectStep = useCallback((
     bookingId: string,
@@ -246,9 +367,16 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       return { success: false, message: '当前不是您的审批环节' }
     }
 
+    const roleNameMap: Record<string, string> = {
+      department_head: '部门负责人',
+      admin: '行政',
+      it: 'IT支持'
+    }
+    const handlerName = roleNameMap[role]
+
     const newFlow: ApprovalStep[] = targetBooking.approvalFlow.map(step => {
       if (step.order === targetBooking!.currentStep) {
-        return { ...step, status: 'rejected' as const, comment, approvedAt: now }
+        return { ...step, status: 'rejected' as const, comment, approvedAt: now, approverName: handlerName }
       }
       return step
     })
@@ -268,9 +396,12 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       return { ...approval, status: 'rejected' as const, comment, approvedAt: now }
     }))
 
+    const notification = buildNotification('booking_rejected', newBookingState, handlerName, 'rejected')
+    addNotification(notification)
+
     console.log('[AppStore] rejectStep 成功')
     return { success: true, message: '已拒绝，预约终止' }
-  }, [bookings])
+  }, [bookings, addNotification])
 
   const getBookingsByDate = useCallback((date: string) => {
     return bookings.filter(b => b.date === date)
@@ -288,11 +419,20 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
     })
   }, [bookings])
 
+  const getBookingsByDateRange = useCallback((roomId: string, startDate: string, endDate: string) => {
+    return bookings.filter(b => {
+      if (b.roomId !== roomId) return false
+      if (b.date < startDate || b.date > endDate) return false
+      if (b.status !== 'approved' && b.status !== 'pending') return false
+      return true
+    })
+  }, [bookings])
+
   const getPendingApprovalsByRole = useCallback((role: 'department_head' | 'admin' | 'it') => {
     return approvals.filter(a => a.role === role && a.status === 'pending')
   }, [approvals])
 
-  const getApprovalCountByStatus = useCallback((status: 'pending' | 'approved' | 'rejected') => {
+  const getApprovalCountByStatus = useCallback((status: 'pending' | 'approved' | 'rejected' | 'cancelled') => {
     return approvals.filter(a => a.status === status).length
   }, [approvals])
 
@@ -313,6 +453,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       value={{
         bookings,
         approvals,
+        notifications,
         addBooking,
         updateBooking,
         approveStep,
@@ -320,9 +461,13 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
         getBookingsByDate,
         getBookingsByApplicant,
         getBookingsByRoom,
+        getBookingsByDateRange,
         getPendingApprovalsByRole,
         getApprovalCountByStatus,
         getRoomBookingsSlots,
+        markNotificationRead,
+        markAllNotificationsRead,
+        getUnreadNotificationCount,
         clearAllData
       }}
     >

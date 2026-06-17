@@ -85,3 +85,25 @@ export const formatDuration = (minutes: number): string => {
     return `${mins}分钟`
   }
 }
+
+export const getWeekStart = (date?: string): string => {
+  const d = date ? dayjs(date) : dayjs()
+  return d.startOf('week').add(1, 'day').format('YYYY-MM-DD')
+}
+
+export const getWeekDatesFromMonday = (date?: string): string[] => {
+  const weekStart = getWeekStart(date)
+  const dates: string[] = []
+  for (let i = 0; i < 7; i++) {
+    dates.push(dayjs(weekStart).add(i, 'day').format('YYYY-MM-DD'))
+  }
+  return dates
+}
+
+export const getNextWeek = (date: string): string => {
+  return dayjs(date).add(7, 'day').format('YYYY-MM-DD')
+}
+
+export const getPrevWeek = (date: string): string => {
+  return dayjs(date).subtract(7, 'day').format('YYYY-MM-DD')
+}

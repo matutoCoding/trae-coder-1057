@@ -271,3 +271,192 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.controlBar {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  background-color: $color-white;
+  border-bottom: 1rpx solid $color-border-light;
+}
+
+.dateSelector {
+  display: none;
+}
+
+.dateNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navBtn {
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-input;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.7;
+    background-color: $color-border-light;
+  }
+}
+
+.currentDate {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.viewToggle {
+  display: flex;
+  gap: $spacing-xs;
+  justify-content: center;
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border-radius: $radius-sm;
+  text-align: center;
+  background-color: $color-bg-input;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary;
+    color: $color-white;
+    font-weight: $font-weight-medium;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.weekWrapper {
+  flex: 1;
+  background-color: $color-white;
+  padding-bottom: 120rpx;
+}
+
+.weekHeader {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: $color-bg-page;
+  border-bottom: 1rpx solid $color-border-light;
+}
+
+.weekDayHeader {
+  flex-shrink: 0;
+  padding: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  border-right: 1rpx solid $color-border-light;
+  background-color: $color-white;
+  position: relative;
+
+  &.todayCol {
+    background-color: #EFF6FF;
+  }
+}
+
+.weekDay {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.weekDate {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}
+
+.todayDot {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: $radius-round;
+  background-color: $color-primary;
+}
+
+.weekRow {
+  display: flex;
+  border-bottom: 1rpx solid $color-border-light;
+  background-color: $color-white;
+}
+
+.weekDayCell {
+  flex-shrink: 0;
+  padding: $spacing-xs;
+  border-right: 1rpx solid $color-border-light;
+  min-height: 140rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  background-color: $color-white;
+  transition: background-color $transition-base;
+
+  &.todayCol {
+    background-color: #EFF6FF;
+  }
+
+  &:active {
+    background-color: #F1F5F9;
+  }
+}
+
+.emptySlot {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  text-align: center;
+  padding: $spacing-md 0;
+  opacity: 0.6;
+}
+
+.weekBooking {
+  padding: 8rpx 12rpx;
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  border-radius: $radius-sm;
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &.pendingBooking {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+  }
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.weekBookingTitle {
+  font-size: 22rpx;
+  color: $color-white;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weekBookingTime {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
