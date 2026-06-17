@@ -1,30 +1,25 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { getBookingsByDate } from '@/data/bookings'
 import { mockRooms } from '@/data/rooms'
 import StatusBadge from '@/components/StatusBadge'
 import { getToday, getDayOfWeek, formatDate } from '@/utils/date'
+import { useAppStore } from '@/store/AppStore'
 import styles from './index.module.scss'
 
 const HomePage: React.FC = () => {
-  const [todayBookings, setTodayBookings] = useState<any[]>([])
+  const { bookings } = useAppStore()
   const today = getToday()
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
   useDidShow(() => {
-    loadData()
+    // 切换回页面时自动响应式数据，bookings变化自动触发重渲染
   })
 
-  const loadData = () => {
-    const bookings = getBookingsByDate(today).filter(
-      b => b.status === 'approved' || b.status === 'pending'
-    )
-    setTodayBookings(bookings)
-  }
+  const todayBookings = useMemo(() => {
+    return bookings
+      .filter(b => b.date === today)
+      .filter(b => b.status === 'approved' || b.status === 'pending')
+  }, [bookings, today])
 
   const stats = useMemo(() => {
     const totalRooms = mockRooms.filter(r => r.status !== 'maintenance').length

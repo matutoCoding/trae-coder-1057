@@ -186,8 +186,9 @@
 
 .flowSteps {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: $spacing-xs;
 }
 
 .flowStep {
@@ -196,6 +197,8 @@
   flex-direction: column;
   align-items: center;
   position: relative;
+  min-width: 0;
+  padding: 0 4rpx;
 }
 
 .stepDot {
@@ -209,13 +212,15 @@
   justify-content: center;
   font-size: $font-size-sm;
   color: $color-text-tertiary;
-  z-index: 1;
+  z-index: 2;
   margin-bottom: $spacing-xs;
+  flex-shrink: 0;
 
   &.current {
     background-color: $color-warning;
     border-color: $color-warning;
     color: $color-white;
+    box-shadow: 0 0 0 6rpx rgba(217, 119, 6, 0.15);
   }
 
   &.approved {
@@ -235,15 +240,43 @@
   font-size: $font-size-xs;
   color: $color-text-tertiary;
   text-align: center;
+  margin-bottom: 4rpx;
+  white-space: nowrap;
+}
+
+.stepApprover {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  text-align: center;
+  line-height: 1.3;
+  margin-top: 2rpx;
+  word-break: break-all;
+}
+
+.stepCommentBox {
+  margin-top: $spacing-xs;
+  padding: 8rpx 12rpx;
+  background-color: $color-bg-input;
+  border-radius: $radius-sm;
+  width: 100%;
+  box-sizing: border-box;
+
+  :global(view), :global(text) {
+    font-size: 20rpx !important;
+    color: $color-text-secondary;
+    line-height: 1.4;
+    word-break: break-all;
+  }
 }
 
 .stepLine {
   position: absolute;
   top: 24rpx;
-  left: calc(50% + 32rpx);
-  right: calc(-50% + 32rpx);
+  left: calc(50% + 28rpx);
+  right: calc(-50% + 28rpx);
   height: 4rpx;
   background-color: $color-border;
+  z-index: 1;
 
   &.completed {
     background-color: $color-success;

@@ -1,4 +1,5 @@
 import { Component, PropsWithChildren } from 'react'
+import { AppStoreProvider } from '@/store/AppStore'
 import './app.scss'
 
 class App extends Component<PropsWithChildren> {
@@ -6,7 +7,11 @@ class App extends Component<PropsWithChildren> {
   componentDidShow() {}
   componentDidHide() {}
   render() {
-    return this.props.children
+    return (
+      <AppStoreProvider>
+        {this.props.children}
+      </AppStoreProvider>
+    )
   }
 }
 

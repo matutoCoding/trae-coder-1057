@@ -2,21 +2,28 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { View, Text, Button, ScrollView } from '@tarojs/components'
 import Taro, { useRouter, useDidShow } from '@tarojs/taro'
 import { getRoomById } from '@/data/rooms'
-import { getBookingsByRoom } from '@/data/bookings'
 import { MeetingRoom } from '@/types/room'
 import { getToday, formatDate, getDayOfWeek } from '@/utils/date'
+import { useAppStore } from '@/store/AppStore'
 import StatusBadge from '@/components/StatusBadge'
 import styles from './index.module.scss'
 
 const RoomDetailPage: React.FC = () => {
   const router = useRouter()
+  const { bookings: allBookings } = useAppStore()
   const [room, setRoom] = useState<MeetingRoom | null>(null)
-  const [currentDate, setCurrentDate] = useState(getToday())
-  const [bookings, setBookings] = useState<any[]>([])
+  const paramDate = (router.params.date as string) || getToday()
+  const [currentDate, setCurrentDate] = useState(paramDate)
 
   useEffect(() => {
     loadRoom()
   }, [router.params.id])
+
+  useEffect(() => {
+    if (router.params.date) {
+      setCurrentDate(router.params.date)
+    }
+  }, [router.params.date])
 
   useDidShow(() => {
     loadRoom()
@@ -26,34 +33,27 @@ const RoomDetailPage: React.FC = () => {
     const id = router.params.id as string
     if (id) {
       const data = getRoomById(id)
-      if (data) {
-        setRoom(data)
-        loadBookings(data.id)
-      }
+      if (data) setRoom(data)
     }
   }
 
-  const loadBookings = (roomId: string) => {
-    const data = getBookingsByRoom(roomId, currentDate).filter(
-      b => b.status === 'approved' || b.status === 'pending'
-    )
-    setBookings(data)
-  }
+  const bookings = useMemo(() => {
+    if (!room) return []
+    return allBookings
+      .filter(b => b.roomId === room.id && b.date === currentDate)
+      .filter(b => b.status === 'approved' || b.status === 'pending')
+  }, [room, currentDate, allBookings])
 
   const handlePrevDay = () => {
     const date = new Date(currentDate)
     date.setDate(date.getDate() - 1)
-    const newDate = date.toISOString().split('T')[0]
-    setCurrentDate(newDate)
-    if (room) loadBookings(room.id)
+    setCurrentDate(date.toISOString().split('T')[0])
   }
 
   const handleNextDay = () => {
     const date = new Date(currentDate)
     date.setDate(date.getDate() + 1)
-    const newDate = date.toISOString().split('T')[0]
-    setCurrentDate(newDate)
-    if (room) loadBookings(room.id)
+    setCurrentDate(date.toISOString().split('T')[0])
   }
 
   const handleBookNow = () => {

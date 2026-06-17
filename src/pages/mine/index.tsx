@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { mockBookings } from '@/data/bookings'
+import { useAppStore } from '@/store/AppStore'
 import styles from './index.module.scss'
 
 const MinePage: React.FC = () => {
+  const { bookings, getPendingApprovalsByRole } = useAppStore()
   const [userInfo] = useState({
     name: '张明',
     department: '产品部',
@@ -12,16 +13,11 @@ const MinePage: React.FC = () => {
     roles: ['employee', 'department_head']
   })
 
-  const [myBookings, setMyBookings] = useState<any[]>([])
+  useDidShow(() => {})
 
-  useDidShow(() => {
-    loadMyBookings()
-  })
-
-  const loadMyBookings = () => {
-    const bookings = mockBookings.filter(b => b.applicantId === 'user-001')
-    setMyBookings(bookings)
-  }
+  const myBookings = useMemo(() => {
+    return bookings.filter(b => b.applicantId === 'user-001')
+  }, [bookings])
 
   const stats = useMemo(() => {
     const pending = myBookings.filter(b => b.status === 'pending').length
@@ -32,12 +28,8 @@ const MinePage: React.FC = () => {
   }, [myBookings])
 
   const pendingApprovalCount = useMemo(() => {
-    return mockBookings.filter(b => {
-      if (b.status !== 'pending') return false
-      const currentStep = b.approvalFlow.find(s => s.order === b.currentStep)
-      return currentStep && currentStep.role === 'department_head' && currentStep.status === 'pending'
-    }).length
-  }, [])
+    return getPendingApprovalsByRole('department_head').length
+  }, [getPendingApprovalsByRole])
 
   const goToMyBookings = () => {
     Taro.showToast({ title: '我的预约', icon: 'none' })

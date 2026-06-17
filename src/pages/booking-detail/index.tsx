@@ -1,33 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { View, Text, Button } from '@tarojs/components'
 import Taro, { useRouter, useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
-import { getBookingById, getBookingStatusText } from '@/data/bookings'
+import { getBookingStatusText } from '@/data/bookings'
 import { Booking } from '@/types/booking'
 import { formatDate, getDayOfWeek, formatDuration, getDuration } from '@/utils/date'
+import { useAppStore } from '@/store/AppStore'
 import styles from './index.module.scss'
 
 const BookingDetailPage: React.FC = () => {
   const router = useRouter()
-  const [booking, setBooking] = useState<Booking | null>(null)
+  const { bookings, updateBooking } = useAppStore()
 
-  useEffect(() => {
-    loadBooking()
-  }, [router.params.id])
+  useDidShow(() => {})
 
-  useDidShow(() => {
-    loadBooking()
-  })
-
-  const loadBooking = () => {
+  const booking = useMemo(() => {
     const id = router.params.id as string
-    if (id) {
-      const data = getBookingById(id)
-      if (data) {
-        setBooking(data)
-      }
-    }
-  }
+    if (!id) return null
+    return bookings.find(b => b.id === id) || null
+  }, [router.params.id, bookings])
 
   const handleCancel = () => {
     Taro.showModal({
@@ -35,10 +26,10 @@ const BookingDetailPage: React.FC = () => {
       content: '确定要取消这个预约吗？',
       confirmColor: '#DC2626',
       success: (res) => {
-        if (res.confirm) {
-          setBooking(prev => prev ? { ...prev, status: 'cancelled' } : null)
+        if (res.confirm && booking) {
+          updateBooking(booking.id, { status: 'cancelled' })
           Taro.showToast({ title: '已取消预约', icon: 'success' })
-          console.log('[Booking] 取消预约:', booking?.id)
+          console.log('[Booking] 取消预约:', booking.id)
         }
       }
     })

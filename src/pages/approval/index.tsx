@@ -1,69 +1,96 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
-import { mockApprovals, getApprovalsByStatus, getApprovalCountByStatus } from '@/data/approvals'
+import { useAppStore } from '@/store/AppStore'
 import ApprovalCard from '@/components/ApprovalCard'
 import styles from './index.module.scss'
 
+const CURRENT_USER_ROLES: Array<'department_head' | 'admin' | 'it'> = ['department_head']
+
 const ApprovalPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected'>('pending')
-  const [approvals, setApprovals] = useState(mockApprovals)
+  const {
+    approvals,
+    approveStep,
+    rejectStep,
+    getApprovalCountByStatus,
+    getPendingApprovalsByRole
+  } = useAppStore()
 
-  useDidShow(() => {
-    loadApprovals()
-  })
+  useDidShow(() => {})
 
-  const loadApprovals = () => {
-    setApprovals(mockApprovals)
-  }
+  const pendingApprovals = useMemo(() => {
+    const allPending: any[] = []
+    CURRENT_USER_ROLES.forEach(role => {
+      allPending.push(...getPendingApprovalsByRole(role))
+    })
+    // 去重
+    const seen = new Set()
+    return allPending.filter(a => {
+      if (seen.has(a.id)) return false
+      seen.add(a.id)
+      return true
+    })
+  }, [approvals, getPendingApprovalsByRole])
+
+  const handledApprovals = useMemo(() => {
+    return approvals.filter(a =>
+      CURRENT_USER_ROLES.includes(a.role as any) &&
+      a.status !== 'pending'
+    )
+  }, [approvals])
 
   const filteredApprovals = useMemo(() => {
-    return approvals.filter(a => a.status === activeTab)
-  }, [approvals, activeTab])
+    if (activeTab === 'pending') return pendingApprovals
+    if (activeTab === 'approved') return handledApprovals.filter(a => a.status === 'approved')
+    return handledApprovals.filter(a => a.status === 'rejected')
+  }, [activeTab, pendingApprovals, handledApprovals])
 
   const stats = useMemo(() => ({
-    pending: getApprovalCountByStatus('pending'),
-    approved: getApprovalCountByStatus('approved'),
-    rejected: getApprovalCountByStatus('rejected')
-  }), [])
+    pending: pendingApprovals.length,
+    approved: handledApprovals.filter(a => a.status === 'approved').length,
+    rejected: handledApprovals.filter(a => a.status === 'rejected').length
+  }), [pendingApprovals, handledApprovals])
 
-  const handleApprove = (id: string) => {
+  const handleApprove = (approvalId: string) => {
+    const approval = approvals.find(a => a.id === approvalId)
+    if (!approval) return
+
     Taro.showModal({
       title: '确认通过',
       content: '确定要通过该审批吗？',
       success: (res) => {
         if (res.confirm) {
-          setApprovals(prev =>
-            prev.map(a =>
-              a.id === id
-                ? { ...a, status: 'approved' as const, approvedAt: new Date().toLocaleString() }
-                : a
-            )
-          )
-          Taro.showToast({ title: '已通过', icon: 'success' })
-          console.log('[Approval] 审批通过:', id)
+          const result = approveStep(approval.bookingId, approval.role)
+          if (result.success) {
+            Taro.showToast({ title: result.message || '已通过', icon: 'success' })
+            console.log('[Approval] 审批通过:', approvalId, result)
+          } else {
+            Taro.showToast({ title: result.message || '操作失败', icon: 'none' })
+          }
         }
       }
     })
   }
 
-  const handleReject = (id: string) => {
+  const handleReject = (approvalId: string) => {
+    const approval = approvals.find(a => a.id === approvalId)
+    if (!approval) return
+
     Taro.showModal({
       title: '确认拒绝',
-      content: '确定要拒绝该审批吗？',
+      content: '确定要拒绝该审批吗？拒绝后预约将终止。',
       confirmColor: '#DC2626',
       success: (res) => {
         if (res.confirm) {
-          setApprovals(prev =>
-            prev.map(a =>
-              a.id === id
-                ? { ...a, status: 'rejected' as const, approvedAt: new Date().toLocaleString() }
-                : a
-            )
-          )
-          Taro.showToast({ title: '已拒绝', icon: 'none' })
-          console.log('[Approval] 审批拒绝:', id)
+          const result = rejectStep(approval.bookingId, approval.role, '不符合审批要求')
+          if (result.success) {
+            Taro.showToast({ title: result.message || '已拒绝', icon: 'none' })
+            console.log('[Approval] 审批拒绝:', approvalId, result)
+          } else {
+            Taro.showToast({ title: result.message || '操作失败', icon: 'none' })
+          }
         }
       }
     })

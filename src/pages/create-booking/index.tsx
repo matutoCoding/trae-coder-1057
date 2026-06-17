@@ -4,13 +4,16 @@ import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import { mockRooms } from '@/data/rooms'
 import { autoAllocateRoom } from '@/utils/roomAllocator'
-import { getToday, formatDate, getDayOfWeek } from '@/utils/date'
-import { getBookingsByDate } from '@/data/bookings'
-import { RoomBookingSlot } from '@/types/room'
+import { getToday, formatDate, getDayOfWeek, formatDateTime } from '@/utils/date'
+import { RoomBookingSlot, BookingStatus } from '@/types/room'
+import { Booking, ApprovalStep } from '@/types/booking'
 import TimeSlotPicker from '@/components/TimeSlotPicker'
+import { useAppStore } from '@/store/AppStore'
 import styles from './index.module.scss'
 
 const CreateBookingPage: React.FC = () => {
+  const { addBooking, getRoomBookingsSlots } = useAppStore()
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(getToday())
@@ -25,21 +28,11 @@ const CreateBookingPage: React.FC = () => {
 
   const schedules = useMemo(() => {
     const map = new Map<string, RoomBookingSlot[]>()
-    const bookings = getBookingsByDate(date)
     mockRooms.forEach(room => {
-      const roomBookings = bookings
-        .filter(b => b.roomId === room.id)
-        .map(b => ({
-          bookingId: b.id,
-          startTime: b.startTime,
-          endTime: b.endTime,
-          title: b.title,
-          status: b.status
-        }))
-      map.set(room.id, roomBookings)
+      map.set(room.id, getRoomBookingsSlots(room.id, date))
     })
     return map
-  }, [date])
+  }, [date, getRoomBookingsSlots])
 
   useEffect(() => {
     calculateAllocation()
@@ -100,26 +93,66 @@ const CreateBookingPage: React.FC = () => {
     Taro.showLoading({ title: '提交中...' })
 
     setTimeout(() => {
-      Taro.hideLoading()
-      Taro.showToast({ title: '预约提交成功', icon: 'success' })
-      console.log('[CreateBooking] 提交预约:', {
+      const now = formatDateTime(new Date())
+      const bookingId = `booking-${Date.now()}`
+
+      const approvalFlow: ApprovalStep[] = [
+        {
+          id: `step-${Date.now()}-1`,
+          role: 'department_head',
+          roleName: '部门负责人',
+          status: 'pending',
+          order: 1
+        },
+        {
+          id: `step-${Date.now()}-2`,
+          role: 'admin',
+          roleName: '行政',
+          status: 'pending',
+          order: 2
+        },
+        {
+          id: `step-${Date.now()}-3`,
+          role: 'it',
+          roleName: 'IT支持',
+          status: 'pending',
+          order: 3
+        }
+      ]
+
+      const newBooking: Booking = {
+        id: bookingId,
         title,
-        description,
+        description: description || undefined,
         date,
         startTime,
         endTime,
         attendeeCount,
+        roomId: allocationResult?.room?.id,
+        roomName: allocationResult?.room?.name,
+        applicantId: 'user-001',
+        applicantName: '张明',
+        applicantDepartment: '产品部',
+        status: 'pending' as BookingStatus,
+        currentStep: 1,
+        approvalFlow,
+        createdAt: now,
+        updatedAt: now,
         needProjector,
         needWhiteboard,
-        needVideoConference,
-        roomId: allocationResult?.room?.id,
-        roomName: allocationResult?.room?.name
-      })
+        needVideoConference
+      }
+
+      addBooking(newBooking)
+      console.log('[CreateBooking] 写入全局Store:', newBooking.id, newBooking.title)
+
+      Taro.hideLoading()
+      Taro.showToast({ title: '预约提交成功', icon: 'success' })
 
       setTimeout(() => {
         Taro.navigateBack()
       }, 1500)
-    }, 1000)
+    }, 600)
   }
 
   const handleTimeChange = (start: string, end: string) => {
